@@ -10,19 +10,22 @@ import (
 )
 
 func LoadConfig() io.Reader {
+
 	workDir, err := os.Getwd()
 	CheckErr(err)
-	logx.Println("workDir: ", workDir)
+	logx.Println("workDir is: ", workDir)
 
 	_, srcFile, _, ok := runtime.Caller(1)
 	if !ok {
 		logx.Fatalf("runtime caller not found")
 	}
 
+	fName := "config.json"
 	paths := []string{
-		path.Join(path.Dir(srcFile), "config.json"),
-		path.Join(".", "config.json"),
-		path.Join(".", "config", "config.json"),
+		path.Join(path.Dir(srcFile), fName),
+		path.Join(".", fName),
+		path.Join(".", "config", fName),
+		path.Join(workDir, fName),
 	}
 
 	found := false
