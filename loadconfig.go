@@ -22,10 +22,10 @@ func LoadConfig() io.Reader {
 
 	fName := "config.json"
 	paths := []string{
-		path.Join(path.Dir(srcFile), fName),
 		path.Join(".", fName),
 		path.Join(".", "config", fName),
 		path.Join(workDir, fName),
+		path.Join(path.Dir(srcFile), fName), // src file location as last option
 	}
 
 	found := false

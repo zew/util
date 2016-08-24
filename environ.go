@@ -6,12 +6,12 @@ import (
 	"strings"
 )
 
-func Env() string {
-	environ := os.Getenv("EXEC_ENVIRONMENT")
-	if environ == "" {
-		environ = "dev"
+func PrimeDataSource() string {
+	dsn1 := os.Getenv("DATASOURCE1")
+	if dsn1 == "" {
+		dsn1 = "dsn1"
 	}
-	return environ
+	return dsn1
 }
 
 func EnvVar(key string) string {
