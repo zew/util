@@ -33,7 +33,7 @@ func LoadConfig() io.Reader {
 	for _, v := range paths {
 		file, err = os.Open(v)
 		if err != nil {
-			logx.Printf("could not open v: %v", v, err)
+			logx.Printf("could not open: %v %v", v, err)
 			continue
 		}
 		found = true
