@@ -71,6 +71,7 @@ func Request(method, url string, argKeys, argVals []string) (respBytes []byte, e
 	}
 
 	client := HttpClient()
+	// logx.Printf("doing req %v", req.URL)
 	resp, err := client.Do(req)
 	if err != nil {
 		return
