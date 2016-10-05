@@ -50,7 +50,7 @@ func Request(method, url string, argKeys, argVals []string) (respBytes []byte, e
 		}
 
 		q := req.URL.Query()
-		for i, key := range argKeys { // Add the other fields
+		for i, key := range argKeys {
 			q.Add(key, argVals[i])
 		}
 		req.URL.RawQuery = q.Encode()
@@ -63,7 +63,7 @@ func Request(method, url string, argKeys, argVals []string) (respBytes []byte, e
 		}
 
 		form := p_url.Values{}
-		for i, key := range argKeys { // Add the other fields
+		for i, key := range argKeys {
 			form.Add(key, argVals[i])
 		}
 		req.PostForm = form
@@ -79,7 +79,7 @@ func Request(method, url string, argKeys, argVals []string) (respBytes []byte, e
 	defer resp.Body.Close()
 
 	// Check the response
-	if resp.StatusCode != http.StatusOK {
+	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusPreconditionFailed {
 		err = fmt.Errorf("bad response %s for %v", resp.Status, req.URL.String())
 		return
 	}
@@ -135,7 +135,22 @@ func Upload(url string, argKeys, argVals []string, file string) (respBytes []byt
 	}
 	// Setting the content type; containing the boundary.
 	req.Header.Set("Content-Type", w.FormDataContentType())
+
+	// We could redundantly add values as GET-Params,
+	// since server might not expect POST-multipart encoding.
+	/*
+		q := req.URL.Query()
+		for i, key := range argKeys {
+			q.Add(key, argVals[i])
+		}
+		req.URL.RawQuery = q.Encode()
+	*/
+
 	client := HttpClient()
+
+	// logx.Printf("uploading to %v", url)
+	// logx.Printf("uploading to %+v", req)
+
 	resp, err := client.Do(req)
 	if err != nil {
 		return
@@ -143,7 +158,7 @@ func Upload(url string, argKeys, argVals []string, file string) (respBytes []byt
 	defer resp.Body.Close()
 
 	// Check the response
-	if resp.StatusCode != http.StatusOK {
+	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusPreconditionFailed {
 		err = fmt.Errorf("bad response %s for %v", resp.Status, req.URL.String())
 		return
 	}
