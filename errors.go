@@ -3,9 +3,13 @@ package util
 import (
 	"os"
 	"strings"
+	"sync"
 
 	"github.com/zew/logx"
 )
+
+var occurred = map[string]int{}
+var l sync.Mutex
 
 func CheckErr(err error, tolerate ...string) {
 	defer logx.SL().Incr().Decr()
@@ -14,7 +18,12 @@ func CheckErr(err error, tolerate ...string) {
 		for _, tol := range tolerate {
 			tol = strings.ToLower(tol)
 			if strings.Contains(errStr, tol) {
-				logx.Printf("tolerated error: %v", err)
+				l.Lock()
+				occurred[err.Error()]++
+				l.Unlock()
+				if occurred[err.Error()] < 2 {
+					logx.Printf("tolerated error: %v", err)
+				}
 				return
 			}
 		}

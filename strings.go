@@ -55,6 +55,7 @@ func EnsureUtf8(haystack string) string {
 	return ret.String()
 }
 
+// See test cases
 func HumanizeFloat(f float64) string {
 	str := fmt.Sprintf("%v", f)
 	strs := strings.Split(str, ".")

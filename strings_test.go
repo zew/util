@@ -26,7 +26,7 @@ func TestB(t *testing.T) {
 
 	for _, tc := range tcs {
 		got := HumanizeFloat(tc.in)
-		// t.Logf("%20v - want %20v got %20v\n", tc.in, tc.want, got)
+		t.Logf("%20v - want %20v got %20v\n", tc.in, tc.want, got)
 		if got != tc.want {
 			t.Errorf("%20v - want %20v got %20v\n", tc.in, tc.want, got)
 		}
