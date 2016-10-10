@@ -28,8 +28,22 @@ func CheckErr(err error, tolerate ...string) {
 			}
 		}
 		logx.Printf("%v", err)
-		str := strings.Join(logx.StackTrace(2, 3, 2), "\n\t")
+		str := strings.Join(logx.StackTrace(1, 4, 3), "\n\t")
 		logx.Printf("\n\t%s\n", str)
 		os.Exit(1)
 	}
+}
+
+func SqlAlreadyExists(e error) bool {
+	if e != nil {
+		canTolerate := []string{"Duplicate entry", "UNIQUE constraint failed"}
+		errStr := strings.ToLower(e.Error())
+		for _, tol := range canTolerate {
+			tol = strings.ToLower(tol)
+			if strings.Contains(errStr, tol) {
+				return true
+			}
+		}
+	}
+	return false
 }
