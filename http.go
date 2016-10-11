@@ -30,14 +30,10 @@ func HttpClient() *http.Client {
 	return netClient
 }
 
-func Request(method, url string, argKeys, argVals []string) (respBytes []byte, err error) {
+func Request(method, url string, vals p_url.Values) (respBytes []byte, err error) {
 
 	if !(method == "GET" || method == "POST") {
 		logx.Fatalf("must be GET or POST; not %v", method)
-	}
-
-	if len(argKeys) != len(argVals) {
-		logx.Fatalf("keys and vals must be equal size; not %v %v", len(argKeys), len(argVals))
 	}
 
 	var req *http.Request
@@ -48,25 +44,15 @@ func Request(method, url string, argKeys, argVals []string) (respBytes []byte, e
 		if err != nil {
 			return
 		}
-
-		q := req.URL.Query()
-		for i, key := range argKeys {
-			q.Add(key, argVals[i])
-		}
-		req.URL.RawQuery = q.Encode()
+		req.URL.RawQuery = vals.Encode()
+		// logx.Printf("GET requesting %v", req.URL.String())
 
 	} else if method == "POST" {
 
-		req, err = http.NewRequest("POST", url, nil)
+		req, err = http.NewRequest("POST", url, bytes.NewBufferString(vals.Encode())) // <-- URL-encoded payload
 		if err != nil {
 			return
 		}
-
-		form := p_url.Values{}
-		for i, key := range argKeys {
-			form.Add(key, argVals[i])
-		}
-		req.PostForm = form
 		req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 	}
 
@@ -78,14 +64,16 @@ func Request(method, url string, argKeys, argVals []string) (respBytes []byte, e
 	}
 	defer resp.Body.Close()
 
-	// Check the response
-	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusPreconditionFailed {
-		err = fmt.Errorf("bad response %s for %v", resp.Status, req.URL.String())
+	// Even for bad response status: Try to get the response body
+	respBytes, err = ioutil.ReadAll(resp.Body)
+	if err != nil {
+		err = fmt.Errorf("%v; response status %q ", err, resp.Status)
 		return
 	}
 
-	respBytes, err = ioutil.ReadAll(resp.Body)
-	if err != nil {
+	// Check response status
+	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusTemporaryRedirect {
+		err = fmt.Errorf("bad response %q ", resp.Status)
 		return
 	}
 
@@ -93,11 +81,7 @@ func Request(method, url string, argKeys, argVals []string) (respBytes []byte, e
 
 }
 
-func Upload(url string, argKeys, argVals []string, file string) (respBytes []byte, err error) {
-
-	if len(argKeys) != len(argVals) {
-		logx.Fatalf("keys and vals must be equal size; not %v %v", len(argKeys), len(argVals))
-	}
+func Upload(url string, vals p_url.Values, file string) (respBytes []byte, err error) {
 
 	var b bytes.Buffer
 	w := multipart.NewWriter(&b)
@@ -116,11 +100,12 @@ func Upload(url string, argKeys, argVals []string, file string) (respBytes []byt
 	}
 
 	// Add the other fields
-	for i, key := range argKeys {
+	for key, _ := range vals {
+		val := vals.Get(key)
 		if ffw, err = w.CreateFormField(key); err != nil {
 			return
 		}
-		if _, err = ffw.Write([]byte(argVals[i])); err != nil {
+		if _, err = ffw.Write([]byte(val)); err != nil {
 			return
 		}
 	}
@@ -157,14 +142,16 @@ func Upload(url string, argKeys, argVals []string, file string) (respBytes []byt
 	}
 	defer resp.Body.Close()
 
-	// Check the response
-	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusPreconditionFailed {
-		err = fmt.Errorf("bad response %s for %v", resp.Status, req.URL.String())
+	// Even for bad response status: Try to get the response body
+	respBytes, err = ioutil.ReadAll(resp.Body)
+	if err != nil {
+		err = fmt.Errorf("%v; response status %q ", err, resp.Status)
 		return
 	}
 
-	respBytes, err = ioutil.ReadAll(resp.Body)
-	if err != nil {
+	// Check response status
+	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusTemporaryRedirect {
+		err = fmt.Errorf("bad response %q ", resp.Status)
 		return
 	}
 
