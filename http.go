@@ -49,11 +49,14 @@ func Request(method, url string, vals p_url.Values) (respBytes []byte, err error
 
 	} else if method == "POST" {
 
+		// bytes.NewBufferString AND strings.NewReader seem to work equally well
 		req, err = http.NewRequest("POST", url, bytes.NewBufferString(vals.Encode())) // <-- URL-encoded payload
+		// req, err = http.NewRequest("POST", url, strings.NewReader(vals.Encode())) // <-- URL-encoded payload
 		if err != nil {
 			return
 		}
-		req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+		// strangely, the json *reponse* is empty, if we omit this:
+		req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	}
 
 	client := HttpClient()
