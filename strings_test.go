@@ -1,6 +1,9 @@
 package util
 
-import "testing"
+import (
+	"fmt"
+	"testing"
+)
 
 func TestB(t *testing.T) {
 
@@ -32,4 +35,9 @@ func TestB(t *testing.T) {
 		}
 	}
 
+}
+
+func ExampleHumanizeFloat() {
+	fmt.Println(HumanizeFloat(float64(-.0119999999)))
+	// Output: -0.012
 }
