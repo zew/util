@@ -28,7 +28,7 @@ func CheckErr(err error, tolerate ...string) {
 			}
 		}
 		logx.Printf("%v", err)
-		str := strings.Join(logx.StackTrace(1, 4, 3), "\n\t")
+		str := logx.SPrintStackTrace(1, 4, 3)
 		logx.Printf("\n\t%s\n", str)
 		os.Exit(1)
 	}
