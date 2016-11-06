@@ -8,23 +8,40 @@ import (
 	"mime/multipart"
 	"net"
 	"net/http"
-	p_url "net/url"
+	p_url "net/url" // the package url
 	"os"
 	"time"
 
 	"github.com/zew/logx"
 )
 
+// Get a http server
+// thenewstack.io/building-a-web-server-in-go/
+// blog.cloudflare.com/the-complete-guide-to-golang-net-http-timeouts/
+func HttpServer() *http.Server {
+	srv := &http.Server{
+		ReadTimeout:  5 * time.Second,
+		WriteTimeout: 10 * time.Second,
+	}
+	return srv
+}
+
 // Get a http client
+// blog.cloudflare.com/the-complete-guide-to-golang-net-http-timeouts/
 func HttpClient() *http.Client {
+
+	// Giving more granular control than http.Client.Timeout:
 	var netTransport = &http.Transport{
 		Dial: (&net.Dialer{
-			Timeout: 5 * time.Second,
+			Timeout:   30 * time.Second,
+			KeepAlive: 30 * time.Second,
 		}).Dial,
-		TLSHandshakeTimeout: 5 * time.Second,
+		TLSHandshakeTimeout:   10 * time.Second,
+		ResponseHeaderTimeout: 10 * time.Second,
+		ExpectContinueTimeout: 2 * time.Second,
 	}
 	var netClient = &http.Client{
-		Timeout:   time.Second * 1110,
+		Timeout:   time.Second * 120, // covers entire exchange, from Dial (unless reused) to reading the body.
 		Transport: netTransport,
 	}
 	return netClient
