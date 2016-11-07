@@ -10,6 +10,7 @@ import (
 	"net/http"
 	p_url "net/url" // the package url
 	"os"
+	"strings"
 	"time"
 
 	"github.com/zew/logx"
@@ -176,4 +177,23 @@ func Upload(url string, vals p_url.Values, file string) (respBytes []byte, err e
 	}
 
 	return
+}
+
+var staticExtensions = []string{
+	".css",
+	".js",
+	".ico",
+	".png",
+	".jpg",
+	".gif",
+	".svg",
+}
+
+func StaticExtension(r *http.Request) bool {
+	for _, v := range staticExtensions {
+		if strings.HasSuffix(r.URL.Path, v) {
+			return true
+		}
+	}
+	return false
 }
