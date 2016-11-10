@@ -5,8 +5,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"math"
+	"regexp"
 	"strings"
 	"unicode/utf8"
+
+	"github.com/zew/logx"
 )
 
 func UpTo(s string, numChars int) string {
@@ -93,4 +96,103 @@ func HumanizeFloat(f float64) string {
 	}
 
 	return strings.Join(strs, ".")
+}
+
+// Any slice element, that is contained in another slice element
+// gets trimmed.
+func TrimRedundant(els []string, optArg ...int) []string {
+
+	depth := 0
+	if len(optArg) > 0 {
+		depth = optArg[0]
+	}
+	if depth > 20 {
+		logx.Fatalf("too deep recursion -%v- lvl %v", strings.Join(els, ","), depth)
+		return els
+	}
+
+	redundant := []int{}
+	for i := 0; i < len(els); i++ {
+		for j := 0; j < len(els); j++ {
+			if i == j {
+				continue
+			}
+			if strings.Contains(els[i], els[j]) {
+				redundant = append(redundant, j)
+				// logx.Printf("%v %v - %-20v contains %-20v => red: %v", i, j, els[i], els[j], redundant)
+			}
+		}
+	}
+
+	if len(redundant) == 0 {
+		return els
+	}
+
+	if len(redundant) > 0 {
+		// We cannot remove the redun
+		// logx.Printf("redund %v - els -%v-", redundant, strings.Join(els, ","))
+		for i := 0; i < len(redundant); i++ {
+			els[redundant[i]] = ""
+		}
+		// logx.Printf("redund %v - els -%v-", redundant, strings.Join(els, ","))
+		for i := 0; i < len(els); i++ {
+			// logx.Printf("iterating redund %v", i)
+			if els[i] == "" {
+				head := els[:i]
+				tail := els[i+1:]
+				// logx.Printf("trimming  %v of %v:  -%v- -%v- ", i, len(els)-1, strings.Join(head, ","), strings.Join(tail, ","))
+				els = append(head, tail...)
+				// logx.Printf("result   -%v- ", strings.Join(els, ","))
+			}
+		}
+	}
+	els = TrimRedundant(els, depth+1)
+	return els
+
+}
+
+// normalize spaces
+var replNewLines = strings.NewReplacer("\r\n", " ", "\r", " ", "\n", " ")
+
+var replTabs = strings.NewReplacer("\t", " ")
+var doubleSpaces = regexp.MustCompile("([ ]+)")
+
+// All kinds of newlines, tabs and double spaces
+// are reduced to single space.
+// It paves the way for later beautification.
+func NormalizeInnerWhitespace(s string) string {
+	s = replNewLines.Replace(s)
+	s = replTabs.Replace(s)
+	s = doubleSpaces.ReplaceAllString(s, " ")
+	return s
+}
+
+// We want only one newline; not several.
+// We also want to catch newlines
+// trailed by any kind of white space.
+var undoubleNewlines = regexp.MustCompile(`(\r?\n(\s*))+`)
+
+func UndoubleNewlines(s string) string {
+	return undoubleNewlines.ReplaceAllString(s, "\n")
+}
+
+var removeProtocol = strings.NewReplacer(
+	"http://", "",
+	"https://", "",
+)
+
+func RemoveProtocol(s string) string {
+	return removeProtocol.Replace(s)
+}
+
+// Func isSpacey is a shortcut func.
+// It detects if there is ONLY whitspace,
+// but nothing else.
+// All combinations of whitespace lead to return true.
+func IsSpacey(s string) bool {
+	s = strings.TrimSpace(s) // TrimSpace removes leading-trailing \n \r\n
+	if s == "" {
+		return true
+	}
+	return false
 }

@@ -2,10 +2,11 @@ package util
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 )
 
-func TestB(t *testing.T) {
+func TestHumanizeFloat(t *testing.T) {
 
 	type tcT struct {
 		in   float64
@@ -32,6 +33,37 @@ func TestB(t *testing.T) {
 		t.Logf("%20v - want %20v got %20v\n", tc.in, tc.want, got)
 		if got != tc.want {
 			t.Errorf("%20v - want %20v got %20v\n", tc.in, tc.want, got)
+		}
+	}
+
+}
+
+func TestTrimRedundant(t *testing.T) {
+
+	type tcT struct {
+		in   []string
+		want []string
+	}
+
+	tcs := []tcT{
+		{[]string{"", ""}, []string{}},
+		{[]string{"Bello", ""}, []string{"Bello"}},
+		{[]string{"Bello", "Heino"}, []string{"Bello", "Heino"}},
+		{[]string{"Bello", "ello"}, []string{"Bello"}},
+		{[]string{"Bello", "Ello"}, []string{"Bello", "Ello"}},
+		{[]string{"ino", "Heino"}, []string{"Heino"}},
+
+		{[]string{"Bello", "Heino", "Bello not Heino"}, []string{"Bello not Heino"}},
+		{[]string{"Bello", "Heino", "Bello not Harald"}, []string{"Heino", "Bello not Harald"}},
+
+		{[]string{"Bello", "Heino", "Bello not Heino", "Cardigan"}, []string{"Bello not Heino", "Cardigan"}},
+	}
+
+	for i, tc := range tcs {
+		got := TrimRedundant(tc.in)
+		// t.Logf("%2v: inp %-20v - want %-20v got %-20v\n", i, strings.Join(tc.in, ","), strings.Join(tc.want, ","), strings.Join(got, ","))
+		if strings.Join(got, ",") != strings.Join(tc.want, ",") {
+			t.Errorf("%2v: inp %-20v - want %-20v got %-20v\n", i, strings.Join(tc.in, ","), strings.Join(tc.want, ","), strings.Join(got, ","))
 		}
 	}
 
