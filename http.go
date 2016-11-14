@@ -179,9 +179,7 @@ func Upload(url string, vals p_url.Values, file string) (respBytes []byte, err e
 	return
 }
 
-var staticExtensions = []string{
-	".css",
-	".js",
+var imgExtensions = []string{
 	".ico",
 	".png",
 	".jpg",
@@ -189,9 +187,20 @@ var staticExtensions = []string{
 	".svg",
 }
 
+var staticExtensions = append(imgExtensions, ".css", ".js")
+
 func StaticExtension(r *http.Request) bool {
 	for _, v := range staticExtensions {
 		if strings.HasSuffix(r.URL.Path, v) {
+			return true
+		}
+	}
+	return false
+}
+
+func ImageExtension(p string) bool {
+	for _, v := range imgExtensions {
+		if strings.HasSuffix(p, v) {
 			return true
 		}
 	}

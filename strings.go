@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"math"
+	"net/url"
 	"regexp"
 	"strings"
 	"unicode/utf8"
@@ -195,4 +196,33 @@ func IsSpacey(s string) bool {
 		return true
 	}
 	return false
+}
+
+var allNumbers = regexp.MustCompile(`[0-9]+`)
+
+// Implicitly contains removeProtokol()
+// HostName gets reduced (www. is chopped off)
+// Path is cleansed of long number /avatar/304930538/me.jpg => /avatar//me.jpg
+// Notice: Url-Params also get stripped.
+func UrlBeautify(surl string) string {
+	if !strings.HasPrefix(surl, "http://") && !strings.HasPrefix(surl, "https://") {
+		surl = "https://" + surl
+	}
+	url2, err := url.Parse(surl)
+	if err != nil {
+		return surl
+	}
+	// Last two "." delimited tokens of hostname
+	// shop.wsj.com => wsj.com
+	hst := url2.Host
+	if strings.Count(hst, ".") > 1 {
+		parts := strings.Split(hst, ".")
+		lenP := len(parts)
+		hst = parts[lenP-2] + "." + parts[lenP-1]
+	}
+
+	pth := url2.Path
+	pth = allNumbers.ReplaceAllString(pth, "")
+
+	return hst + pth
 }
