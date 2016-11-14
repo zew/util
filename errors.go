@@ -11,6 +11,7 @@ import (
 var occurred = map[string]int{}
 var l sync.Mutex
 
+// This should be moved to log package
 func CheckErr(err error, tolerate ...string) {
 	defer logx.SL().Incr().Decr()
 	if err != nil {

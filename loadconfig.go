@@ -4,28 +4,29 @@ import (
 	"io"
 	"os"
 	"path"
-	"runtime"
 
 	"github.com/zew/logx"
 )
 
-func LoadConfig() io.Reader {
+func LoadConfig(names ...string) io.Reader {
 
 	workDir, err := os.Getwd()
 	CheckErr(err)
-	logx.Println("workDir is: ", workDir)
-
-	_, srcFile, _, ok := runtime.Caller(1)
-	if !ok {
-		logx.Fatalf("runtime caller not found")
-	}
+	srcDir := logx.PathToSourceFile(1)
+	logx.Println("work dir: ", workDir)
+	logx.Println("src  dir: ", srcDir)
 
 	fName := "config.json"
+	if len(names) > 0 {
+		fName = names[0]
+	}
+
 	paths := []string{
 		path.Join(".", fName),
+		path.Join(workDir, fName), // same as .
 		path.Join(".", "config", fName),
-		path.Join(workDir, fName),
-		path.Join(path.Dir(srcFile), fName), // src file location as last option
+		path.Join(srcDir, fName),                    // src file location
+		path.Join(workDir, "appaccess-only", fName), // app engine:
 	}
 
 	found := false
@@ -33,7 +34,7 @@ func LoadConfig() io.Reader {
 	for _, v := range paths {
 		file, err = os.Open(v)
 		if err != nil {
-			logx.Printf("could not open: %v", err)
+			logx.Printf("- %v", err)
 			continue
 		}
 		logx.Printf("found: %v", v)
