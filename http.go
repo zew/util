@@ -10,6 +10,7 @@ import (
 	"net/http"
 	p_url "net/url" // the package url
 	"os"
+	"path"
 	"strings"
 	"time"
 
@@ -205,4 +206,58 @@ func ImageExtension(p string) bool {
 		}
 	}
 	return false
+}
+
+func UrlParseImproved(str string) (*p_url.URL, error) {
+	// Prevent "google.com" => u.Host == "" when scheme == ""
+	// p_url.Parse acts ugly, if there is not http:// prefix
+	if !strings.HasPrefix(str, "http://") && !strings.HasPrefix(str, "https://") {
+		str = "https://" + str
+	}
+	ourl, err := p_url.Parse(str)
+	return ourl, err
+}
+
+// Stripping subdomains
+// Last two "." delimited tokens of hostname
+// xx1.shop.wsj.com => wsj.com
+func HostCore(h string) (core string, subdomains []string) {
+
+	h, _, _ = net.SplitHostPort(h)
+
+	if strings.Count(h, ".") < 2 {
+		core = h
+		subdomains = []string{}
+		return
+	}
+	parts := strings.Split(h, ".")
+	lenP := len(parts)
+	core = parts[lenP-2] + "." + parts[lenP-1]
+	subdomains = parts[0 : lenP-2]
+
+	if len(subdomains) > 0 && subdomains[len(subdomains)-1] == "www" {
+		subdomains = subdomains[:len(subdomains)-1] // chop off last
+	}
+
+	return
+}
+
+// subdomain1.host.com/dir1
+// is reformed to
+// host.com/subdomain1/dir1
+// except for www.host.com
+func NormalizeSubdomainsToPath(url *p_url.URL) string {
+	subdomains := []string{}
+	url.Host, subdomains = HostCore(url.Host)
+	if len(subdomains) > 0 {
+		url.Path = path.Join(path.Join(subdomains...), url.Path)
+	}
+	url.Scheme = ""
+	url.User = nil
+
+	str := url.String()
+	if strings.HasPrefix(str, "//") {
+		str = str[2:]
+	}
+	return str
 }

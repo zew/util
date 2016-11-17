@@ -212,17 +212,10 @@ func UrlBeautify(surl string) string {
 	if err != nil {
 		return surl
 	}
-	// Last two "." delimited tokens of hostname
-	// shop.wsj.com => wsj.com
-	hst := url2.Host
-	if strings.Count(hst, ".") > 1 {
-		parts := strings.Split(hst, ".")
-		lenP := len(parts)
-		hst = parts[lenP-2] + "." + parts[lenP-1]
-	}
 
 	pth := url2.Path
 	pth = allNumbers.ReplaceAllString(pth, "")
 
+	hst, _ := HostCore(url2.Host)
 	return hst + pth
 }
