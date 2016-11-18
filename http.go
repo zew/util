@@ -223,7 +223,14 @@ func UrlParseImproved(str string) (*p_url.URL, error) {
 // xx1.shop.wsj.com => wsj.com
 func HostCore(h string) (core string, subdomains []string) {
 
-	h, _, _ = net.SplitHostPort(h)
+	host, _, err := net.SplitHostPort(h) // the damn func *absorbs* everything on error
+
+	if err != nil {
+		// logx.Println(err, "host:", h, "port:", port)
+		// logx.PrintStackTrace()
+	} else {
+		h = host
+	}
 
 	if strings.Count(h, ".") < 2 {
 		core = h

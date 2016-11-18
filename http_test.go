@@ -30,6 +30,18 @@ func TestHostCore(t *testing.T) {
 			"zew.de",
 			[]string{"sd1"},
 		},
+		{"subdom1.faz.net",
+			"faz.net",
+			[]string{"subdom1"},
+		},
+		{"faz.net",
+			"faz.net",
+			[]string{},
+		},
+		{"net",
+			"net",
+			[]string{},
+		},
 	}
 
 	for i, tc := range tcs {
@@ -57,6 +69,8 @@ func TestNormalizeSubdomainsToPath(t *testing.T) {
 			"zew.de/dir1/dir2/file.ext?p1=v1#aaa"},
 		{"www.subd1.zew.de:33332/dir1/dir2/file.ext?p1=v1#aaa",
 			"zew.de/www/subd1/dir1/dir2/file.ext?p1=v1#aaa"},
+		{"subdom1.faz.net/aktuell/second.html",
+			"faz.net/subdom1/aktuell/second.html"},
 	}
 
 	for i, tc := range tcs {
