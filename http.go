@@ -49,7 +49,7 @@ func HttpClient() *http.Client {
 	return netClient
 }
 
-func Request(method, url string, vals p_url.Values) (respBytes []byte, err error) {
+func Request(method, url string, vals p_url.Values, cookies []*http.Cookie) (respBytes []byte, err error) {
 
 	if !(method == "GET" || method == "POST") {
 		logx.Fatalf("must be GET or POST; not %v", method)
@@ -78,8 +78,12 @@ func Request(method, url string, vals p_url.Values) (respBytes []byte, err error
 		req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	}
 
+	for _, v := range cookies {
+		req.AddCookie(v)
+	}
 	client := HttpClient()
 	// logx.Printf("doing req %v", req.URL)
+
 	resp, err := client.Do(req)
 	if err != nil {
 		return
