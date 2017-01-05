@@ -192,7 +192,7 @@ var imgExtensions = []string{
 	".svg",
 }
 
-var staticExtensions = append(imgExtensions, ".css", ".js")
+var staticExtensions = append(imgExtensions, ".css", ".js", ".sqlite")
 
 func StaticExtension(r *http.Request) bool {
 	for _, v := range staticExtensions {
