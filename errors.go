@@ -46,7 +46,11 @@ func BubbleUp(err error, tolerate ...string) {
 
 func SqlAlreadyExists(e error) bool {
 	if e != nil {
-		canTolerate := []string{"Duplicate entry", "UNIQUE constraint failed"}
+		canTolerate := []string{
+			"Duplicate entry",
+			"UNIQUE constraint failed",
+			"duplicate key value violates",
+		}
 		errStr := strings.ToLower(e.Error())
 		for _, tol := range canTolerate {
 			tol = strings.ToLower(tol)
