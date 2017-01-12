@@ -64,13 +64,19 @@ const prec = 6
 
 func HumanizeFloat(f float64) string {
 
+	//
+	// base of 0.01 is -2
+	// base of 100  is  2
 	absF := f
 	if absF < 0 {
 		absF = -absF
 	}
 	base := int(math.Floor(math.Log10(absF)))
-	// log.Printf("base of %v is %v", f, base)
 
+	// now we want
+	// 0,14285714285714285714285714285714 => 0,142857
+	// 0,01428571428571428571428571428571 => 0,0142857
+	// 0,00142857142857142857142857142857 => 0,00142857
 	var str string
 	formatter := "%v" // fmt.Printf("%.4f", k)
 	cutoff := prec
@@ -78,8 +84,8 @@ func HumanizeFloat(f float64) string {
 	} else {
 		cutoff = prec - base
 	}
-
 	formatter = fmt.Sprintf("%%.%vf", cutoff)
+
 	str = fmt.Sprintf(formatter, f)
 
 	strs := strings.Split(str, ".")
