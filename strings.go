@@ -64,6 +64,10 @@ const prec = 6
 
 func HumanizeFloat(f float64) string {
 
+	if f == 0.0 {
+		return "0"
+	}
+
 	//
 	// base of 0.01 is -2
 	// base of 100  is  2

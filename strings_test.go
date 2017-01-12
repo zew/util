@@ -14,6 +14,7 @@ func TestHumanizeFloat(t *testing.T) {
 	}
 
 	tcs := []tcT{
+		{float64(0.0) * float64(10.21), "0"},
 		{float64(10.0) * float64(10.21), "102.1"},
 		{float64(-10.0) * float64(10.21), "-102.1"},
 		{float64(100.0) * float64(10.21), "1021"},
