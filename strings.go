@@ -60,12 +60,48 @@ func EnsureUtf8(haystack string) string {
 }
 
 // See test cases
+const prec = 6
+
 func HumanizeFloat(f float64) string {
-	str := fmt.Sprintf("%v", f)
+
+	absF := f
+	if absF < 0 {
+		absF = -absF
+	}
+	base := int(math.Floor(math.Log10(absF)))
+	// log.Printf("base of %v is %v", f, base)
+
+	var str string
+	formatter := "%v" // fmt.Printf("%.4f", k)
+	cutoff := prec
+	if base > -1 {
+	} else {
+		cutoff = prec - base
+	}
+
+	formatter = fmt.Sprintf("%%.%vf", cutoff)
+	str = fmt.Sprintf(formatter, f)
+
 	strs := strings.Split(str, ".")
 	if len(strs) == 1 {
 		return str
 	}
+
+	// 102.1000 back to 102.1
+	// 0.012000 back to 0.012
+	// log.Printf("before: -%v-", strs[1])
+	for {
+		if strings.HasSuffix(strs[1], "0") {
+			strs[1] = strs[1][:len(strs[1])-1]
+		} else {
+			break
+		}
+	}
+	// log.Printf("after : -%v-", strs[1])
+	if len(strs[1]) == 0 {
+		return strs[0]
+	}
+
 	if pos := strings.Index(strs[1], "0000"); pos > -1 {
 		if pos == 0 {
 			return strs[0]
