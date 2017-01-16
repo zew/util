@@ -7,6 +7,7 @@ import (
 	"math"
 	"net/url"
 	"regexp"
+	"strconv"
 	"strings"
 	"unicode/utf8"
 
@@ -59,10 +60,25 @@ func EnsureUtf8(haystack string) string {
 	return ret.String()
 }
 
-// See test cases
-const prec = 6
+type FloatHumanizer int
+
+// => cut off after 5 digits after separator; 0,
+// 0,00142857142... becomes 0,0014286
+var fh FloatHumanizer = 6
 
 func HumanizeFloat(f float64) string {
+	return fh.Humanize(f)
+}
+
+func (fh *FloatHumanizer) SetPrecision(newPrec int) {
+	if newPrec < 2 {
+		panic("Precision needs to be larger than 1. Use floor instead.")
+	}
+	*fh = FloatHumanizer(newPrec)
+}
+
+// See test cases
+func (precision FloatHumanizer) Humanize(f float64) string {
 
 	if f == 0.0 {
 		return "0"
@@ -77,25 +93,36 @@ func HumanizeFloat(f float64) string {
 	}
 	base := int(math.Floor(math.Log10(absF)))
 
-	// now we want
-	// 0,14285714285714285714285714285714 => 0,142857
-	// 0,01428571428571428571428571428571 => 0,0142857
-	// 0,00142857142857142857142857142857 => 0,00142857
-	var str string
-	formatter := "%v" // fmt.Printf("%.4f", k)
-	cutoff := prec
+	//
+	// For small numbers such as 0.00012345
+	// precision is increased by three.
+	precIncrease := 0
 	if base > -1 {
 	} else {
-		cutoff = prec - base
+		precIncrease = -base - 1
 	}
-	formatter = fmt.Sprintf("%%.%vf", cutoff)
 
-	str = fmt.Sprintf(formatter, f)
+	// This could not prevent exponent
+	// formatting for f > 10^6:
+	if false {
+		formatter := fmt.Sprintf("%%.%vf", int(precision)+precIncrease)
+		str := fmt.Sprintf(formatter, f)
+		str = strings.TrimSpace(str)
+	}
+
+	// The only way to suppress the exponent
+	// is to use strconv.FormatFloat.
+	// Param 'f' means 'no exponent'.
+	// Precision could be -1.
+	// This would produce all ~55 digits of a float64
+	str := strconv.FormatFloat(f, 'f', int(precision)+precIncrease, 64)
 
 	strs := strings.Split(str, ".")
 	if len(strs) == 1 {
 		return str
 	}
+
+	// logx.Printf("%12v %-20v ", strs[0], strs[1])
 
 	// 102.1000 back to 102.1
 	// 0.012000 back to 0.012
@@ -107,12 +134,25 @@ func HumanizeFloat(f float64) string {
 			break
 		}
 	}
-	// log.Printf("after : -%v-", strs[1])
+
 	if len(strs[1]) == 0 {
 		return strs[0]
 	}
 
-	if pos := strings.Index(strs[1], "0000"); pos > -1 {
+	// 100.0000012345678  => 100
+	// but
+	//   0.0000012345678  => 0.00000123457
+	startPosZeroes := -1
+	if base > -1 {
+	} else {
+		startPosZeroes += -base
+	}
+
+	// Eliminate sequences of zeros
+	// 123.4000000567  is shortened to
+	// 123.4
+	cutMeOff := strings.Repeat("0", int(precision)-1)
+	if pos := strings.Index(strs[1], cutMeOff); pos > startPosZeroes {
 		if pos == 0 {
 			return strs[0]
 		}
@@ -121,7 +161,11 @@ func HumanizeFloat(f float64) string {
 		return strings.Join(strs, ".")
 	}
 
-	if pos := strings.Index(strs[1], "9999"); pos > -1 {
+	// Eliminate sequences of nines
+	// 123.4999999567  is shortened to
+	// 123.5
+	cutMeOff = strings.Repeat("9", int(precision)-1)
+	if pos := strings.Index(strs[1], cutMeOff); pos > -1 {
 		// 1234.99999;  -1234.99999
 		if pos == 0 {
 			if f >= 0 {
