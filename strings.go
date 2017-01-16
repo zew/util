@@ -52,6 +52,15 @@ func IndentedDump(v interface{}) string {
 	return string(byts)
 }
 
+var ascii1 = regexp.MustCompile(`[^a-z0-9\_]+`)
+
+func Mustaz09_(s string) bool {
+	if ascii1.MatchString(s) {
+		return false
+	}
+	return true
+}
+
 func EnsureUtf8(haystack string) string {
 	ret := bytes.Buffer{}
 	for _, codepoint := range haystack {
