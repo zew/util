@@ -192,7 +192,12 @@ var imgExtensions = []string{
 	".svg",
 }
 
-var staticExtensions = append(imgExtensions, ".css", ".js", ".sqlite")
+var staticExtensions = append(imgExtensions,
+	".css",
+	".js",
+	".sqlite",
+	".md", // github markdown
+)
 
 func StaticExtension(r *http.Request) bool {
 	for _, v := range staticExtensions {
