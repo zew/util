@@ -10,8 +10,6 @@ import (
 	"strconv"
 	"strings"
 	"unicode/utf8"
-
-	"github.com/zew/logx"
 )
 
 func UpTo(s string, numChars int) string {
@@ -198,59 +196,6 @@ func (precision FloatHumanizer) Humanize(f float64) string {
 	return strings.Join(strs, ".")
 }
 
-// Any slice element, that is contained in another slice element
-// gets trimmed.
-func TrimRedundant(els []string, optArg ...int) []string {
-
-	depth := 0
-	if len(optArg) > 0 {
-		depth = optArg[0]
-	}
-	if depth > 20 {
-		logx.Fatalf("too deep recursion -%v- lvl %v", strings.Join(els, ","), depth)
-		return els
-	}
-
-	redundant := []int{}
-	for i := 0; i < len(els); i++ {
-		for j := 0; j < len(els); j++ {
-			if i == j {
-				continue
-			}
-			if strings.Contains(els[i], els[j]) {
-				redundant = append(redundant, j)
-				// logx.Printf("%v %v - %-20v contains %-20v => red: %v", i, j, els[i], els[j], redundant)
-			}
-		}
-	}
-
-	if len(redundant) == 0 {
-		return els
-	}
-
-	if len(redundant) > 0 {
-		// We cannot remove the redun
-		// logx.Printf("redund %v - els -%v-", redundant, strings.Join(els, ","))
-		for i := 0; i < len(redundant); i++ {
-			els[redundant[i]] = ""
-		}
-		// logx.Printf("redund %v - els -%v-", redundant, strings.Join(els, ","))
-		for i := 0; i < len(els); i++ {
-			// logx.Printf("iterating redund %v", i)
-			if els[i] == "" {
-				head := els[:i]
-				tail := els[i+1:]
-				// logx.Printf("trimming  %v of %v:  -%v- -%v- ", i, len(els)-1, strings.Join(head, ","), strings.Join(tail, ","))
-				els = append(head, tail...)
-				// logx.Printf("result   -%v- ", strings.Join(els, ","))
-			}
-		}
-	}
-	els = TrimRedundant(els, depth+1)
-	return els
-
-}
-
 // normalize spaces
 var replNewLines = strings.NewReplacer("\r\n", " ", "\r", " ", "\n", " ")
 
@@ -317,4 +262,39 @@ func UrlBeautify(surl string) string {
 
 	hst, _ := HostCore(url2.Host)
 	return hst + pth
+}
+
+var nonAscii = regexp.MustCompile(`[^a-zA-Z0-9\.\_]+`)
+var mutatedVowels = strings.NewReplacer("ä", "ae", "ö", "oe", "ü", "ue", "Ä", "ae", "Ö", "oe", "Ü", "ue")
+
+// LowerCasedUnderscored gives us a condensed filename
+// cleansed of all non Ascii characters
+// where word boundaries are encoded by "_"
+//
+// whenever we want a transformation of user input
+// into innoccuous lower case - sortable - searchable
+// ascii - the we should look to this func
+
+// in addition - extensions are respected and cleansed
+func LowerCasedUnderscored(s string) string {
+
+	//log.Printf("%v\n", s)
+
+	s = mutatedVowels.Replace(s)
+
+	s = strings.TrimSpace(s)
+	s = strings.Trim(s, `"' `)
+
+	replaced := nonAscii.ReplaceAllString(s, "_")
+
+	replaced = strings.Trim(replaced, `_`)
+	replaced = strings.ToLower(replaced)
+
+	// clean the  file extension
+	replaced = strings.Replace(replaced, "_.", ".", -1)
+	replaced = strings.Replace(replaced, "._", ".", -1)
+
+	//log.Printf("%v\n", replaced)
+
+	return replaced
 }
