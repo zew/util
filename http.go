@@ -142,36 +142,31 @@ func Upload(url string, vals p_url.Values, file string) (respBytes []byte, err e
 
 	req, err := http.NewRequest("POST", url, &b)
 	if err != nil {
+		err = fmt.Errorf("req creation failed: %v ", err)
 		return
 	}
 	// Setting the content type; containing the boundary.
 	req.Header.Set("Content-Type", w.FormDataContentType())
-
-	// We could redundantly add values as GET-Params,
-	// since server might not expect POST-multipart encoding.
-	/*
-		q := req.URL.Query()
-		for i, key := range argKeys {
-			q.Add(key, argVals[i])
-		}
-		req.URL.RawQuery = q.Encode()
-	*/
 
 	client := HttpClient()
 
 	// logx.Printf("uploading to %v", url)
 	// logx.Printf("uploading to %+v", req)
 
-	resp, err := client.Do(req)
-	if err != nil {
-		return
+	resp, err1 := client.Do(req)
+	if err1 != nil {
+		err1 = fmt.Errorf("execute req failed: %v ", err1)
+		if resp == nil {
+			return
+		}
 	}
 	defer resp.Body.Close()
 
 	// Even for bad response status: Try to get the response body
 	respBytes, err = ioutil.ReadAll(resp.Body)
-	if err != nil {
-		err = fmt.Errorf("%v; response status %q ", err, resp.Status)
+	if err != nil || err1 != nil {
+		err = fmt.Errorf("response status %q;\nerr1: %v \nerr:  %v \n%s",
+			resp.Status, err1, err, respBytes)
 		return
 	}
 
