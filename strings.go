@@ -68,6 +68,15 @@ func MustazAZ09_(s string) bool {
 	return true
 }
 
+var ascii09 = regexp.MustCompile(`[^0-9\.,]+`)
+
+func Must09(s string) bool {
+	if ascii09.MatchString(s) {
+		return false
+	}
+	return true
+}
+
 func EnsureUtf8(haystack string) string {
 	ret := bytes.Buffer{}
 	for _, codepoint := range haystack {
