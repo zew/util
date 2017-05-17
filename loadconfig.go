@@ -23,8 +23,8 @@ func LoadConfig(names ...string) io.Reader {
 
 	paths := []string{
 		path.Join(".", fName),
-		path.Join(workDir, fName), // same as .
-		path.Join(".", "config", fName),
+		path.Join(workDir, fName),                   // same as .
+		path.Join(".", "config", fName),             // config subdir
 		path.Join(srcDir, fName),                    // src file location
 		path.Join(workDir, "appaccess-only", fName), // app engine:
 	}
