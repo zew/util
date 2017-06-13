@@ -9,6 +9,7 @@ import (
 func ColorTint(col, channel string, pct float64) string {
 
 	col = strings.TrimPrefix(col, "#")
+	col = strings.ToLower(col)
 	if len(col) != 3 && len(col) != 6 {
 		return ""
 	}
@@ -62,17 +63,19 @@ func ColorTint(col, channel string, pct float64) string {
 		changeH = 0
 	}
 
-	// fmt.Printf("from %v - to %v - %v - %v - %v\n", col, rgb, baseHue, baseHue8, changeH)
-
+	ret := ""
 	if channel == "r" {
-		return fmt.Sprintf("#%02X%02s%02s", changeH, rgb[1], rgb[2])
+		ret = fmt.Sprintf("#%02x%02s%02s", changeH, rgb[1], rgb[2])
 	}
 	if channel == "g" {
-		return fmt.Sprintf("#%02s%02X%02s", rgb[0], changeH, rgb[2])
+		ret = fmt.Sprintf("#%02s%02x%02s", rgb[0], changeH, rgb[2])
 	}
 	if channel == "b" {
-		return fmt.Sprintf("#%02s%02s%02X", rgb[0], rgb[1], changeH)
+		ret = fmt.Sprintf("#%02s%02s%02x", rgb[0], rgb[1], changeH)
 	}
-	return ""
+
+	// fmt.Printf("from %v - to %v - %v - %v - %v => %v\n", col, rgb, baseHue, baseHue8, changeH, ret)
+
+	return ret
 
 }
