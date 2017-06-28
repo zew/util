@@ -13,6 +13,6 @@ func ParseTimeForGermanyDirName(t string) (time.Time, error) {
 func ParseTimeForGermanyFmt(parseFmt, t string) (time.Time, error) {
 	// see time_test for alternative ways to retrieve actual live location
 	loc := time.Now().Location()
-	tm, err := time.ParseInLocation(parseFmt, "2012-07-31 22:34:45", loc)
+	tm, err := time.ParseInLocation(parseFmt, t, loc)
 	return tm, err
 }
