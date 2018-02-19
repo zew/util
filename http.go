@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"log"
 	"mime/multipart"
 	"net"
 	"net/http"
@@ -271,4 +272,30 @@ func NormalizeSubdomainsToPath(url *p_url.URL) string {
 		str = str[2:]
 	}
 	return str
+}
+
+// StripPrefix is a 'debug version' of http.StripPrefix;
+// it logs the modified rewritten request elements;
+// it also demonstrated, how to nest a http.Handler.
+func StripPrefix(prefix string, h http.Handler) http.Handler {
+	if prefix == "" {
+		return h
+	}
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		p := strings.TrimPrefix(r.URL.Path, prefix)
+		if len(p) < len(r.URL.Path) {
+			r2 := new(http.Request)
+			*r2 = *r
+			r2.URL = new(p_url.URL)
+			*r2.URL = *r.URL
+			r2.URL.Path = p
+			s := fmt.Sprintf("StripPrefix().Path  %-24v  -  pfx %v   =>  %v\n", r.URL.Path, prefix, r2.URL.Path)
+			log.Printf(s)
+			h.ServeHTTP(w, r2)
+		} else {
+			s := fmt.Sprintf("StripPrefix().Path  %-24v  -  pfx %v   =>  %v\n", r.URL.Path, prefix, p)
+			w.Write([]byte(s))
+			http.NotFound(w, r)
+		}
+	})
 }
