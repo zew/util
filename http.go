@@ -12,10 +12,13 @@ import (
 	p_url "net/url" // the package url
 	"os"
 	"path"
+	"path/filepath"
 	"strings"
 	"time"
 
+	"github.com/pkg/errors"
 	"github.com/zew/logx"
+	"github.com/zew/util"
 )
 
 // Get a http server
@@ -298,4 +301,90 @@ func StripPrefix(prefix string, h http.Handler) http.Handler {
 			http.NotFound(w, r)
 		}
 	})
+}
+
+//
+//
+// ParseAndSaveUploaded is a convenience func to process uploaded files.
+// Saves any number of file uploads to a given directory dir.
+// If given directory is empty string, then file uploads are stored in bytes buffer.
+// It includes an upload size limit to prevent attacks.
+// ParseMultipartForm should not be called before
+//
+// b   contains the file contents, keyed by filename - not by input name.
+// ok  is false, if an error occurred or if no file uploads were found.
+// err contains any possible error.
+//
+// For multiple file upload:
+// ok and err only flag problems with the last processed (failing) upload.
+// Previous uploads might have been successfully written to file.
+func ParseAndSaveUploaded(w http.ResponseWriter, r *http.Request, dir string) (b map[string]bytes.Buffer, ok bool, err error) {
+
+	if strings.ToUpper(r.Method) != "POST" {
+		return b, false, nil
+	}
+
+	b = map[string]bytes.Buffer{} // init map
+
+	r.Body = http.MaxBytesReader(w, r.Body, 200*(1<<20)) // Limit upload sizet to 200 Mb
+
+	const _24K = (1 << 10) * 24 // Up to 24 Kilobytes into memory, rest to temporary disk files
+	if err = r.ParseMultipartForm(_24K); err != nil {
+		return b, false, errors.Wrap(err, "Parse MultipartForm failed")
+	}
+
+	// Find all file uploads
+	formFileInputs := map[string]bool{}
+	for key, fheaders := range r.MultipartForm.File {
+		// For each uploaded file there might be multiple headers (?segments)
+		// Practically: There is every only one
+		for range fheaders {
+			formFileInputs[key] = true
+		}
+	}
+	if len(formFileInputs) < 1 {
+		return b, false, nil
+	}
+	log.Printf("%v file inputs. Input names are %v", len(formFileInputs), formFileInputs)
+
+	for fileInput, _ := range formFileInputs {
+		infile, mpHdr, err := r.FormFile(fileInput)
+		if err != nil {
+			return b, false, errors.Wrap(err, fmt.Sprintf("Opening parsed file failed for %v", fileInput))
+		}
+
+		mpHdr.Filename = util.LowerCasedUnderscored(mpHdr.Filename)
+		mpHdr.Filename = strings.Replace(mpHdr.Filename, "_", "-", -1)
+
+		if len(dir) > 0 {
+			// open destination
+			var outfile *os.File
+			fullPath := filepath.Join(dir, mpHdr.Filename)
+			if outfile, err = os.Create(fullPath); err != nil {
+				return b, false, errors.Wrap(err, fmt.Sprintf("File creation failed for %v (%v)", fullPath, fileInput))
+			}
+
+			defer outfile.Close()
+			var written int64
+			if written, err = io.Copy(outfile, infile); err != nil { // 32K buffer copy
+				return b, false, errors.Wrap(err, fmt.Sprintf("Data writing failed for %v (%v)", fullPath, fileInput))
+			}
+			err = os.Chmod(fullPath, 0644)
+			if err != nil {
+				return b, false, errors.Wrap(err, fmt.Sprintf("Permission setting failed for %v (%v)", fullPath, fileInput))
+			}
+			b[mpHdr.Filename] = bytes.Buffer{} // indicate success - in case succinct uploads fail
+			log.Printf("Saved uploaded file: %v. %v bytes", fullPath, written)
+		} else {
+			var written int64
+			bx := bytes.Buffer{}
+			b[mpHdr.Filename] = bx
+			if written, err = io.Copy(&bx, infile); err != nil {
+				return b, false, errors.Wrap(err, fmt.Sprintf("Failed writing to byteBuffer data for %v (%v)", mpHdr.Filename, fileInput))
+			}
+			log.Printf("Uploaded file %v read into buffer. %v bytes", mpHdr.Filename, written)
+		}
+	}
+
+	return b, true, nil
 }
