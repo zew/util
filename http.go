@@ -18,7 +18,6 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/zew/logx"
-	"github.com/zew/util"
 )
 
 // Get a http server
@@ -353,7 +352,7 @@ func ParseAndSaveUploaded(w http.ResponseWriter, r *http.Request, dir string) (b
 			return b, false, errors.Wrap(err, fmt.Sprintf("Opening parsed file failed for %v", fileInput))
 		}
 
-		mpHdr.Filename = util.LowerCasedUnderscored(mpHdr.Filename)
+		mpHdr.Filename = LowerCasedUnderscored(mpHdr.Filename)
 		mpHdr.Filename = strings.Replace(mpHdr.Filename, "_", "-", -1)
 
 		if len(dir) > 0 {
