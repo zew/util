@@ -195,6 +195,7 @@ var staticExtensions = append(imgExtensions,
 	".js",
 	".sqlite",
 	".md", // github markdown
+	".pdf",
 )
 
 func StaticExtension(r *http.Request) bool {
