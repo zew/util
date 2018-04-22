@@ -192,6 +192,7 @@ var imgExtensions = []string{
 
 var staticExtensions = append(imgExtensions,
 	".css",
+	".ico", // favicon.ico
 	".js",
 	".sqlite",
 	".md", // github markdown

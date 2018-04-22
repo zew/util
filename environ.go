@@ -6,6 +6,7 @@ import (
 	"strings"
 )
 
+// Deprecated - use gorpx - exceldb gorpx
 func PrimeDataSource() string {
 	dsn1 := os.Getenv("DATASOURCE1")
 	if dsn1 == "" {
@@ -14,6 +15,7 @@ func PrimeDataSource() string {
 	return dsn1
 }
 
+// Required environment var
 func EnvVar(key string) string {
 	all := os.Environ()
 	found := false
