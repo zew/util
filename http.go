@@ -183,16 +183,16 @@ func Upload(url string, vals p_url.Values, file string) (respBytes []byte, err e
 }
 
 var imgExtensions = []string{
-	".ico",
+	".ico", // favicon.ico
 	".png",
 	".jpg",
 	".gif",
 	".svg",
 }
 
-var staticExtensions = append(imgExtensions,
+var staticExtensions = append(
+	imgExtensions,
 	".css",
-	".ico", // favicon.ico
 	".js",
 	".sqlite",
 	".md", // github markdown

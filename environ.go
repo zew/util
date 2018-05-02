@@ -1,12 +1,14 @@
 package util
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"strings"
 )
 
-// Deprecated - use gorpx - exceldb gorpx
+// Prime data source is in the "dsn1" configuration map key.
+// Except it is set by ENV var "DATASOURCE1".
 func PrimeDataSource() string {
 	dsn1 := os.Getenv("DATASOURCE1")
 	if dsn1 == "" {
@@ -15,13 +17,16 @@ func PrimeDataSource() string {
 	return dsn1
 }
 
-// Required environment var
-func EnvVar(key string) string {
-	all := os.Environ()
+// Required environment var terminates the program
+// if the env var is not set.
+func EnvVarRequired(key string) string {
+	all := os.Environ() // slice with key=val entries
 	found := false
+	compareTo := key + "="
 	for _, v := range all {
-		if strings.HasPrefix(v, key) {
+		if strings.HasPrefix(v, compareTo) {
 			found = true
+			break
 		}
 	}
 	if !found {
@@ -31,6 +36,22 @@ func EnvVar(key string) string {
 		os.Exit(1)
 	}
 
-	envVal := os.Getenv(key)
-	return envVal
+	return os.Getenv(key)
+}
+
+// EnvVar returns an error, if the key is not present
+func EnvVar(key string) (string, error) {
+	all := os.Environ() // slice with key=val entries
+	found := false
+	compareTo := key + "="
+	for _, v := range all {
+		if strings.HasPrefix(v, compareTo) {
+			found = true
+			break
+		}
+	}
+	if found {
+		return os.Getenv(key), nil
+	}
+	return "", fmt.Errorf("ENV variable %v does not exist", key)
 }
