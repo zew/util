@@ -114,7 +114,7 @@ func (f *FlagsT) Gen() {
 		val := (*f)[idx].Val
 
 		if val == "" {
-			uLong := strings.ToLower(ff.Long)
+			uLong := strings.ToUpper(ff.Long)
 			val = string(os.Getenv(uLong))
 			if val != "" {
 				logx.Printf("Taking %v from ENV %v: %v", ff.Long, uLong, val)
