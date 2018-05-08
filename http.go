@@ -358,6 +358,15 @@ func ParseAndSaveUploaded(w http.ResponseWriter, r *http.Request, dir string) (b
 		mpHdr.Filename = strings.Replace(mpHdr.Filename, "_", "-", -1)
 
 		if len(dir) > 0 {
+
+			// create destination directory, if necessary
+			if _, err := os.Stat(dir); os.IsNotExist(err) {
+				err = os.MkdirAll(dir, 0755)
+				if err != nil {
+					return b, false, errors.Wrap(err, fmt.Sprintf("Directory creation failed for %v (%v)", dir, fileInput))
+				}
+			}
+
 			// open destination
 			var outfile *os.File
 			fullPath := filepath.Join(dir, mpHdr.Filename)
