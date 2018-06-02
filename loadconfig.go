@@ -6,6 +6,7 @@ import (
 	"io"
 	"os"
 	"path"
+	"path/filepath"
 	"strings"
 
 	"github.com/zew/logx"
@@ -26,10 +27,15 @@ func LoadConfigFile(fName string, optSubdir ...string) (io.ReadCloser, error) {
 	logx.Printf("work dir: %v", workDir)
 	logx.Printf("src  dir: %v", srcDir)
 
+	ext := filepath.Ext(fName)
+	fNameExample := strings.TrimSuffix(fName, ext) + "-example" + ext
+
 	paths := []string{
 		// path.Join(workDir, fName),                // same as next below
-		path.Join(".", fName),  // main.go
+		path.Join(".", fName), // main.go
+		path.Join(".", fNameExample),
 		path.Join("..", fName), // one fallback from one directory higher - usually because integrationtests runs from one directory deeper
+		path.Join("..", fNameExample),
 	}
 	subDir := ""
 	if len(optSubdir) > 0 {

@@ -9,7 +9,7 @@ import (
 
 // Prime data source is in the "dsn1" configuration map key.
 // Except it is set by ENV var "DATASOURCE1".
-func PrimeDataSource() string {
+func TOO_COMPLICATED_PrimeDataSource() string {
 	dsn1 := os.Getenv("DATASOURCE1")
 	if dsn1 == "" {
 		dsn1 = "dsn1"
