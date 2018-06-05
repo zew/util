@@ -34,8 +34,12 @@ func LoadConfigFile(fName string, optSubdir ...string) (io.ReadCloser, error) {
 		// path.Join(workDir, fName),                // same as next below
 		path.Join(".", fName), // main.go
 		path.Join(".", fNameExample),
-		path.Join("..", fName), // one fallback from one directory higher - usually because integrationtests runs from one directory deeper
-		path.Join("..", fNameExample),
+
+		// Fallback: Search for file one directory higher -
+		// Was useful because systemtests runs from one directory deeper.
+		// Discontinued because systemtests now changes directory
+		// path.Join("..", fName),
+		// path.Join("..", fNameExample),
 	}
 	subDir := ""
 	if len(optSubdir) > 0 {
