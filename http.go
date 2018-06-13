@@ -319,7 +319,8 @@ func StripPrefix(prefix string, h http.Handler) http.Handler {
 // For multiple file upload:
 // ok and err only flag problems with the last processed (failing) upload.
 // Previous uploads might have been successfully written to file.
-func ParseAndSaveUploaded(w http.ResponseWriter, r *http.Request, dir string) (b map[string]bytes.Buffer, ok bool, err error) {
+func ParseAndSaveUploaded(w http.ResponseWriter, r *http.Request, dir string) (
+	b map[string]bytes.Buffer, ok bool, err error) {
 
 	if strings.ToUpper(r.Method) != "POST" {
 		return b, false, nil
@@ -335,12 +336,18 @@ func ParseAndSaveUploaded(w http.ResponseWriter, r *http.Request, dir string) (b
 	}
 
 	// Find all file uploads
+	// Find out whether they contain an file - or whether they are empty
 	formFileInputs := map[string]bool{}
 	for key, fheaders := range r.MultipartForm.File {
 		// For each uploaded file there might be multiple headers (?segments)
 		// Practically: There is every only one
-		for range fheaders {
-			formFileInputs[key] = true
+		for _, fhVal := range fheaders {
+			x1 := fhVal.Header["Content-Disposition"]
+			x2 := fhVal.Header["Content-Type"]
+			log.Printf("\t %12v: %10v %-20v %v %v", key, fhVal.Size, fhVal.Filename, x1, x2)
+			if fhVal.Filename != "" && fhVal.Size > 0 {
+				formFileInputs[key] = true
+			}
 		}
 	}
 	if len(formFileInputs) < 1 {
