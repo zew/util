@@ -101,7 +101,7 @@ func Request(method, url string, vals p_url.Values, cookies []*http.Cookie) (res
 	}
 
 	// Check response status
-	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusTemporaryRedirect {
+	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusTemporaryRedirect && resp.StatusCode != http.StatusSeeOther {
 		err = fmt.Errorf("bad response %q ", resp.Status)
 		return
 	}
@@ -174,7 +174,8 @@ func Upload(url string, vals p_url.Values, file string) (respBytes []byte, err e
 	}
 
 	// Check response status
-	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusTemporaryRedirect {
+	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusTemporaryRedirect && resp.StatusCode != http.StatusSeeOther {
+
 		err = fmt.Errorf("bad response %q ", resp.Status)
 		return
 	}
