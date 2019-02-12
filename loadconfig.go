@@ -23,6 +23,7 @@ func LoadConfigFile(fName string, optSubdir ...string) (io.ReadCloser, error) {
 	workDir, err := os.Getwd()
 	CheckErr(err)
 	srcDir := logx.PathToSourceFile(1)
+	logx.Printf("fileName: %v", fName)
 	logx.Printf("work dir: %v", workDir)
 	logx.Printf("src  dir: %v", srcDir)
 

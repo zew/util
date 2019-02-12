@@ -2,6 +2,7 @@ package util
 
 import (
 	"bytes"
+	"compress/gzip"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -89,14 +90,29 @@ func Request(method, url string, vals p_url.Values, cookies []*http.Cookie) (res
 
 	resp, err := client.Do(req)
 	if err != nil {
+		err = errors.Wrap(err, "client.Do failed")
 		return
 	}
 	defer resp.Body.Close()
 
+	// Check that the server actually sent compressed data
+	var rdr1 io.ReadCloser
+	switch resp.Header.Get("Content-Encoding") {
+	case "gzip":
+		rdr1, err = gzip.NewReader(resp.Body)
+		if err != nil {
+			err = errors.Wrap(err, "could not read the response as gzip")
+			return
+		}
+		defer rdr1.Close()
+	default:
+		rdr1 = resp.Body
+	}
+
 	// Even for bad response status: Try to get the response body
-	respBytes, err = ioutil.ReadAll(resp.Body)
+	respBytes, err = ioutil.ReadAll(rdr1)
 	if err != nil {
-		err = fmt.Errorf("%v; response status %q ", err, resp.Status)
+		err = errors.Wrap(err, fmt.Sprintf("error in ioutil.ReadAll - resp status %v", resp.Status))
 		return
 	}
 
