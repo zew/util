@@ -1,4 +1,4 @@
-module github.com/zew/exceldb
+module github.com/zew/util
 
 go 1.14
 
