@@ -18,7 +18,6 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
-	"github.com/zew/logx"
 )
 
 // Get a http server
@@ -56,7 +55,7 @@ func HttpClient() *http.Client {
 func Request(method, url string, vals p_url.Values, cookies []*http.Cookie) (respBytes []byte, err error) {
 
 	if !(method == "GET" || method == "POST") {
-		logx.Fatalf("must be GET or POST; not %v", method)
+		log.Fatalf("must be GET or POST; not %v", method)
 	}
 
 	var req *http.Request
@@ -68,7 +67,7 @@ func Request(method, url string, vals p_url.Values, cookies []*http.Cookie) (res
 			return
 		}
 		req.URL.RawQuery = vals.Encode()
-		// logx.Printf("GET requesting %v", req.URL.String())
+		// log.Printf("GET requesting %v", req.URL.String())
 
 	} else if method == "POST" {
 
@@ -86,7 +85,7 @@ func Request(method, url string, vals p_url.Values, cookies []*http.Cookie) (res
 		req.AddCookie(v)
 	}
 	client := HttpClient()
-	// logx.Printf("doing req %v", req.URL)
+	// log.Printf("doing req %v", req.URL)
 
 	resp, err := client.Do(req)
 	if err != nil {
@@ -169,8 +168,8 @@ func Upload(url string, vals p_url.Values, file string) (respBytes []byte, err e
 
 	client := HttpClient()
 
-	// logx.Printf("uploading to %v", url)
-	// logx.Printf("uploading to %+v", req)
+	// log.Printf("uploading to %v", url)
+	// log.Printf("uploading to %+v", req)
 
 	resp, err1 := client.Do(req)
 	if err1 != nil {
@@ -252,8 +251,8 @@ func HostCore(h string) (core string, subdomains []string) {
 	host, _, err := net.SplitHostPort(h) // the damn func *absorbs* everything on error
 
 	if err != nil {
-		// logx.Println(err, "host:", h, "port:", port)
-		// logx.PrintStackTrace()
+		// log.Println(err, "host:", h, "port:", port)
+		// log.PrintStackTrace()
 	} else {
 		h = host
 	}

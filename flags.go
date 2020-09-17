@@ -3,10 +3,9 @@ package util
 import (
 	"flag"
 	"fmt"
+	"log"
 	"os"
 	"strings"
-
-	"github.com/zew/logx"
 )
 
 /*
@@ -41,6 +40,7 @@ Usage:
 	fl.Gen()  // filling Val(s)
 
 	cfg.CfgPath = fl.ByKey("cfg").Val  // Reading some value
+*/Val  // Reading some value
 */
 type FlagT struct {
 	Long       string // key, such as config_file, overrides Short key
@@ -88,7 +88,7 @@ func (f *FlagsT) Gen() {
 	//
 
 	if len(flag.Args()) > 0 {
-		logx.Printf("UNRECOGNIZED command line arguments: %v", flag.Args())
+		log.Printf("UNRECOGNIZED command line arguments: %v", flag.Args())
 	}
 
 	// Loop again
@@ -102,23 +102,23 @@ func (f *FlagsT) Gen() {
 
 		if val == "" && valSh != "" {
 			val = valSh
-			logx.Printf("Taking short key val, since long key is empty %v / %v => %q", ff.Long, ff.Short, val)
+			log.Printf("Taking short key val, since long key is empty %v / %v => %q", ff.Long, ff.Short, val)
 		}
 
 		if val == "" {
 			uLong := strings.ToUpper(ff.Long)
 			val = string(os.Getenv(uLong))
 			if val != "" {
-				logx.Printf("Taking %v from ENV %v: %v", ff.Long, uLong, val)
+				log.Printf("Taking %v from ENV %v: %v", ff.Long, uLong, val)
 			}
 		}
 
 		if val == "" {
-			logx.Printf("Taking %v from DEFAULT: %v", ff.Long, ff.DefaultVal)
+			log.Printf("Taking %v from DEFAULT: %v", ff.Long, ff.DefaultVal)
 			val = ff.DefaultVal
 		}
 
-		logx.Printf("Effective %v / %v => %q", ff.Long, ff.Short, val)
+		log.Printf("Effective %v / %v => %q", ff.Long, ff.Short, val)
 
 		(*f)[idx].Val = val
 	}

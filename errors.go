@@ -2,11 +2,10 @@ package util
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"strings"
 	"sync"
-
-	"github.com/zew/logx"
 )
 
 var occurred = map[string]int{}
@@ -15,7 +14,6 @@ var l sync.Mutex
 // This should be moved to log package
 func CheckErr(err error, tolerate ...string) {
 	if err != nil {
-		defer logx.SL().Incr().Decr()
 		errStr := strings.ToLower(err.Error())
 		for _, tol := range tolerate {
 			tol = strings.ToLower(tol)
@@ -24,14 +22,14 @@ func CheckErr(err error, tolerate ...string) {
 				occurred[err.Error()]++
 				l.Unlock()
 				if occurred[err.Error()] < 2 {
-					logx.Printf("tolerated error: %v", err)
+					log.Printf("tolerated error: %v", err)
 				}
 				return
 			}
 		}
-		logx.Printf("%v", err)
-		str := logx.SPrintStackTrace(1, 4, 3)
-		logx.Printf("\n\t%s\n", str)
+		log.Printf("%v", err)
+		str := StackTraceStr(1, 4, 3)
+		log.Printf("\n\t%s\n", str)
 		os.Exit(1)
 	}
 }
@@ -39,7 +37,6 @@ func CheckErr(err error, tolerate ...string) {
 // This should be moved to log package
 func BubbleUp(err error, tolerate ...string) {
 	if err != nil {
-		defer logx.SL().Incr().Decr()
 		panic(fmt.Sprintf("%v", err))
 	}
 }

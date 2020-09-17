@@ -147,7 +147,7 @@ func (precision FloatHumanizer) Humanize(f float64) string {
 		return str
 	}
 
-	// logx.Printf("%12v %-20v ", strs[0], strs[1])
+	// log.Printf("%12v %-20v ", strs[0], strs[1])
 
 	// 102.1000 back to 102.1
 	// 0.012000 back to 0.012

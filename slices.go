@@ -1,9 +1,8 @@
 package util
 
 import (
+	"log"
 	"strings"
-
-	"github.com/zew/logx"
 )
 
 func Contains(haystack []string, needle string) bool {
@@ -24,7 +23,7 @@ func TrimRedundant(els []string, optArg ...int) []string {
 		depth = optArg[0]
 	}
 	if depth > 20 {
-		logx.Fatalf("too deep recursion -%v- lvl %v", strings.Join(els, ","), depth)
+		log.Fatalf("too deep recursion -%v- lvl %v", strings.Join(els, ","), depth)
 		return els
 	}
 
@@ -36,7 +35,7 @@ func TrimRedundant(els []string, optArg ...int) []string {
 			}
 			if strings.Contains(els[i], els[j]) {
 				redundant = append(redundant, j)
-				// logx.Printf("%v %v - %-20v contains %-20v => red: %v", i, j, els[i], els[j], redundant)
+				// log.Printf("%v %v - %-20v contains %-20v => red: %v", i, j, els[i], els[j], redundant)
 			}
 		}
 	}
@@ -47,19 +46,19 @@ func TrimRedundant(els []string, optArg ...int) []string {
 
 	if len(redundant) > 0 {
 		// We cannot remove the redun
-		// logx.Printf("redund %v - els -%v-", redundant, strings.Join(els, ","))
+		// log.Printf("redund %v - els -%v-", redundant, strings.Join(els, ","))
 		for i := 0; i < len(redundant); i++ {
 			els[redundant[i]] = ""
 		}
-		// logx.Printf("redund %v - els -%v-", redundant, strings.Join(els, ","))
+		// log.Printf("redund %v - els -%v-", redundant, strings.Join(els, ","))
 		for i := 0; i < len(els); i++ {
-			// logx.Printf("iterating redund %v", i)
+			// log.Printf("iterating redund %v", i)
 			if els[i] == "" {
 				head := els[:i]
 				tail := els[i+1:]
-				// logx.Printf("trimming  %v of %v:  -%v- -%v- ", i, len(els)-1, strings.Join(head, ","), strings.Join(tail, ","))
+				// log.Printf("trimming  %v of %v:  -%v- -%v- ", i, len(els)-1, strings.Join(head, ","), strings.Join(tail, ","))
 				els = append(head, tail...)
-				// logx.Printf("result   -%v- ", strings.Join(els, ","))
+				// log.Printf("result   -%v- ", strings.Join(els, ","))
 			}
 		}
 	}

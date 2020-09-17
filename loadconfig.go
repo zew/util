@@ -3,16 +3,33 @@ package util
 import (
 	"fmt"
 	"io"
+	"log"
 	"os"
 	"path"
 	"path/filepath"
+	"runtime"
 	"strings"
-
-	"github.com/zew/logx"
 )
 
+// Returns the the source file path.
+// Good to read file inside a library,
+// completely independent of working dir
+// or application dir.
+func PathToSourceFile(levelsUp ...int) string {
+	lvlUp := 1
+	if len(levelsUp) > 0 {
+		lvlUp = 1 + levelsUp[0]
+	}
+	_, srcFile, _, ok := runtime.Caller(lvlUp)
+	if !ok {
+		log.Panic("runtime caller not found")
+	}
+	p := path.Dir(srcFile)
+	return p
+}
+
 func LoadConfig(names ...string) io.Reader {
-	logx.Fatal("use LoadConfigFile() instead")
+	log.Fatal("use LoadConfigFile() instead")
 	var xx io.Reader
 	return xx
 }
@@ -22,10 +39,10 @@ func LoadConfigFile(fName string, optSubdir ...string) (io.ReadCloser, error) {
 
 	workDir, err := os.Getwd()
 	CheckErr(err)
-	srcDir := logx.PathToSourceFile(1)
-	logx.Printf("fileName: %v", fName)
-	logx.Printf("work dir: %v", workDir)
-	logx.Printf("src  dir: %v", srcDir)
+	srcDir := PathToSourceFile(1) // assuming caller main() in app root
+	log.Printf("fileName: %v", fName)
+	log.Printf("work dir: %v", workDir)
+	log.Printf("src  dir: %v", srcDir)
 
 	ext := filepath.Ext(fName)
 	fNameExample := strings.TrimSuffix(fName, ext) + "-example" + ext
@@ -58,12 +75,12 @@ func LoadConfigFile(fName string, optSubdir ...string) (io.ReadCloser, error) {
 	for _, v := range paths {
 		file, err = os.Open(v)
 		if err != nil && os.IsNotExist(err) {
-			logx.Printf("Not found in  %v", v)
+			log.Printf("Not found in  %v", v)
 			continue
 		} else if err != nil {
-			logx.Fatalf("Error opening config file: %v", err)
+			log.Fatalf("Error opening config file: %v", err)
 		}
-		logx.Printf("Found: %v", v)
+		log.Printf("Found: %v", v)
 		found = true
 		break
 	}
