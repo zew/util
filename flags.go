@@ -40,8 +40,9 @@ Usage:
 	fl.Gen()  // filling Val(s)
 
 	cfg.CfgPath = fl.ByKey("cfg").Val  // Reading some value
-*/Val  // Reading some value
 */
+
+// FlagT reads some command line value
 type FlagT struct {
 	Long       string // key, such as config_file, overrides Short key
 	Short      string // short key, such as cfg
